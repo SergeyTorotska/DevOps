@@ -29,12 +29,12 @@ echo "шестерок = $SIXES"
 update_count ()
 {
 case "$1" in
- 0) let "ONES += 1";;
- 1) let "TWOS += 1";;
- 2) let "THREES += 1";;
- 3) let "FOURS += 1";;
- 4) let "FIVES += 1";;
- 5) let "SIXES += 1";;
+  0) let "ONES += 1";;
+  1) let "TWOS += 1";;
+  2) let "THREES += 1";;
+  3) let "FOURS += 1";;
+  4) let "FIVES += 1";;
+  5) let "SIXES += 1";;
 esac
 }
 
