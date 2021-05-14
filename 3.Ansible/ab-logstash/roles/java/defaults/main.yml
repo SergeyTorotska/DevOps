@@ -1,0 +1,103 @@
+---
+# defaults file for ansible-role-java-open-jdk11
+
+force_java_install: false
+
+java_installer_force_download: true
+java_installer_force_overwrite: true
+java_installer_keep: true
+java_installer_local: false
+
+java_bins_jdk: [ 'javap', 'jmap', 'pack200', 'jrunscript', 'jinfo', 'keytool', 'jjs', 'rmid', 'javadoc', 'rmic', 'jstatd', 'java', 'jdb', 'jar', 'rmiregistry', 'jps', 'javac', 'unpack200', 'jdeps', 'jcmd', 'jconsole', 'jarsigner', 'serialver', 'jstack', 'jstat' ]
+java_bins_server_jre: [ 'pack200', 'jrunscript', 'keytool', 'jjs', 'rmid', 'rmic', 'java', 'jar', 'rmiregistry', 'jps', 'javac', 'unpack200', 'jdeps', 'jcmd', 'jarsigner' ]
+
+java_bins_priority: 9
+java_bins_update: true
+
+java_type: jdk
+java_engine: hotspot  # or openj9
+java_additional_part: ''
+java_folder_name: '{{ java_type }}'
+
+# AdoptOpenJDK 11.0.9.11 (LTS)
+java_version: 11
+java_update: 9
+java_build: '11'
+java_oj9: 'openj9-0.23.0'
+
+# AdoptOpenJDK 11.0.8.10 (LTS)
+# java_version: 11
+# java_update: 8
+# java_build: '10'
+# java_oj9: 'openj9-0.21.0'
+
+# AdoptOpenJDK 11.0.7.10 (LTS)
+# java_version: 11
+# java_update: 7
+# java_build: '10'
+# java_oj9: 'openj9-0.20.0'
+
+# AdoptOpenJDK 11.0.6.10 (LTS)
+# java_version: 11
+# java_update: 6
+# java_build: '10'
+
+# AdoptOpenJDK 11.0.5.10 (LTS)
+# java_version: 11
+# java_update: 5
+# java_build: '10'
+
+# AdoptOpenJDK 14.0.1.7
+# java_version: 14
+# java_update: 1
+# java_build: '7'
+
+# AdoptOpenJDK 13.0.2.8
+# java_version: 13
+# java_update: 2
+# java_build: '8'
+
+# AdoptOpenJDK 13.0.1.9
+# java_version: 13
+# java_update: 1
+# java_build: '9'
+
+# AdoptOpenJDK 12.0.2.10
+# java_version: 12
+# java_update: 2
+# java_build: '10'
+
+
+# Older versions
+
+# AdoptOpenJDK 8.0.252.09 (LTS)
+# java_version: 8
+# java_update: 252
+# java_build: '09'
+
+# AdoptOpenJDK 8.0.242.08 (LTS)
+# java_version: 8
+# java_update: 242
+# java_build: '08'
+
+# AdoptOpenJDK 8.0.232.09 (LTS)
+# java_version: 8
+# java_update: 232
+# java_build: '09'
+
+# AdoptOpenJDK 9.0.4.11
+# java_version: 9
+# java_update: 4
+# java_build: '11'
+
+# AdoptOpenJDK 10.0.2.13
+# java_version: 10
+# java_update: 2
+# java_build: '13'
+
+java_platform: x64_linux
+
+java_usr_folder: /usr/java
+java_latest_folder: /usr/java/latest
+
+java_download_base_url: https://github.com/AdoptOpenJDK
