@@ -1,0 +1,2 @@
+[webui_servers]
+ab-webui ansible_host=192.168.99.100 ansible_user=ubuntu ansible_ssh_pass=ubuntu 
