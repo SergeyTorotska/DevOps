@@ -1,0 +1,119 @@
+---
+
+- name: Download rsyslog PGP key (works with Bionic behind a proxy)
+  become: yes
+  get_url:
+    dest: /usr/local/src/rsyslog.asc
+    mode: 0644
+    url: "{{ sansible_rsyslog_apt_keyserver }}/pks/lookup?op=get&search=0x{{ sansible_rsyslog_apt_key_id }}"
+  retries: 2
+  delay: 10
+  register: sansible_rsyslog_pgp_result
+  until: sansible_rsyslog_pgp_result is succeeded
+
+- name: Ensures rsyslog PGP key is known
+  become: yes
+  apt_key:
+    file: /usr/local/src/rsyslog.asc
+    id: "{{ sansible_rsyslog_apt_key_id }}"
+    state: present
+
+- name: Add rsyslog v8 repo
+  become: yes
+  apt_repository:
+    repo: "{{ sansible_rsyslog_apt_repo }}"
+    state: present
+    update_cache: yes
+
+- name: Purge old rsyslog config files leftover from upgrades
+  become: yes
+  file:
+    path: "/etc/rsyslog.d/{{ item }}"
+    state: absent
+  with_items: "{{ sansible_rsyslog_config_files_to_purge }}"
+  notify:
+    - restart rsyslog
+
+- name: Install rsyslog and supporting packages
+  become: yes
+  apt:
+    name:
+      - "libfastjson4={{ sansible_rsyslog_version_libfastjson4 }}"
+      - "rsyslog={{ sansible_rsyslog_version }}"
+      - "rsyslog-mmjsonparse={{ sansible_rsyslog_version_mmjsonparse }}"
+
+- name: Configure default rsyslog shipping configs
+  become: yes
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/{{ item }}"
+  with_items:
+    - rsyslog.conf
+    - rsyslog.d/10-cloud-init-logs-shipping.conf
+    - rsyslog.d/90-syslog-shipping.conf
+  when: sansible_rsyslog_default_config
+  notify:
+    - restart rsyslog
+
+- name: Configure Built-In Application Logs
+  become: yes
+  template:
+    src: "{{ sansible_rsyslog_builtin_configs_application_logs_template.src }}"
+    dest: "{{ sansible_rsyslog_builtin_configs_application_logs_template.dest }}"
+  when: sansible_rsyslog_builtin_configs_application_logs_enabled
+  notify:
+    - restart rsyslog
+
+- name: Configure Built-In Auth Logs
+  become: yes
+  template:
+    src: "{{ sansible_rsyslog_builtin_configs_auth_logs_template.src }}"
+    dest: "{{ sansible_rsyslog_builtin_configs_auth_logs_template.dest }}"
+  when: sansible_rsyslog_builtin_configs_auth_logs_enabled
+  notify:
+    - restart rsyslog
+
+- name: Configure Built-In Docker Application Logs
+  become: yes
+  template:
+    src: "{{ sansible_rsyslog_builtin_configs_docker_application_logs_template.src }}"
+    dest: "{{ sansible_rsyslog_builtin_configs_docker_application_logs_template.dest }}"
+  when: sansible_rsyslog_builtin_configs_docker_application_logs_enabled
+  notify:
+    - restart rsyslog
+
+- name: Configure Built-In Docker JSON Logs
+  become: yes
+  template:
+    src: "{{ sansible_rsyslog_builtin_configs_docker_json_logs_template.src }}"
+    dest: "{{ sansible_rsyslog_builtin_configs_docker_json_logs_template.dest }}"
+  when: sansible_rsyslog_builtin_configs_docker_json_logs_enabled
+  notify:
+    - restart rsyslog
+
+- name: Configure Built-In Docker Journald Logs
+  become: yes
+  template:
+    src: "{{ sansible_rsyslog_builtin_configs_docker_journald_logs_template.src }}"
+    dest: "{{ sansible_rsyslog_builtin_configs_docker_journald_logs_template.dest }}"
+  when: sansible_rsyslog_builtin_configs_docker_journald_logs_enabled
+  notify:
+    - restart rsyslog
+
+- name: Configure Built-In JSON Logs
+  become: yes
+  template:
+    src: "{{ sansible_rsyslog_builtin_configs_json_logs_template.src }}"
+    dest: "{{ sansible_rsyslog_builtin_configs_json_logs_template.dest }}"
+  when: sansible_rsyslog_builtin_configs_json_logs_enabled
+  notify:
+    - restart rsyslog
+
+- name: Configure Built-In nginx Logs
+  become: yes
+  template:
+    src: "{{ sansible_rsyslog_builtin_configs_nginx_access_logs_template.src }}"
+    dest: "{{ sansible_rsyslog_builtin_configs_nginx_access_logs_template.dest }}"
+  when: sansible_rsyslog_builtin_configs_nginx_access_logs_enabled
+  notify:
+    - restart rsyslog

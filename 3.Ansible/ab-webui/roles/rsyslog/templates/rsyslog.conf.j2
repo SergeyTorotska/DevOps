@@ -1,0 +1,184 @@
+#jinja2: lstrip_blocks: True
+##
+# {{ ansible_managed }}
+#
+
+# This must come before any network modules
+global(
+	{% for key, value in (sansible_rsyslog_defaults_global | combine(sansible_rsyslog_config_global)).items() %}
+	{{ key }}="{{ value }}"
+	{% endfor %}
+)
+
+#################
+#### MODULES ####
+#################
+
+module(load="imfile" PollingInterval="10")
+module(load="imklog")
+module(load="imuxsock")
+module(load="mmjsonparse")
+
+###########################
+#### GLOBAL DIRECTIVES ####
+###########################
+
+#
+# Queue settings
+#
+main_queue(
+	{% for key, value in (sansible_rsyslog_defaults_main_queue | combine(sansible_rsyslog_config_main_queue)).items() %}
+	{{ key }}="{{ value }}"
+	{% endfor %}
+)
+
+#
+# Templates
+#
+
+# Template for shipping syslog rfc5424 messages sent directly to rsyslog
+template(name="syslogTemplate"
+	type="list") {
+	constant(value="{ ")
+	constant(value="\"type\":\"syslog\", ")
+	constant(value="\"host\":\"")
+	property(name="hostname")
+	constant(value="\", ")
+	constant(value="\"timestamp\":\"")
+	property(name="timestamp" dateFormat="rfc3339")
+	constant(value="\", ")
+	constant(value="\"@version\":\"2\", ")
+	constant(value="\"role\":\"{{ sansible_rsyslog_app_name }}\", ")
+	constant(value="\"message\":\"")
+	property(name="msg" format="json")
+	constant(value="\", ")
+	constant(value="\"priority\":\"")
+	property(name="syslogseverity")
+	constant(value="\", ")
+	constant(value="\"program\":\"")
+	property(name="programname")
+	constant(value="\", ")
+	constant(value="\"facility\":\"")
+	property(name="syslogfacility-text")
+	constant(value="\", ")
+	constant(value="\"severity\":\"")
+	property(name="syslogseverity-text")
+	constant(value="\"}\n")
+}
+
+# Template for shipping auth rfc5424 messages sent directly to rsyslog
+template(name="authlogTemplate"
+	type="list") {
+	constant(value="{ ")
+	constant(value="\"type\":\"authlog\", ")
+	constant(value="\"host\":\"")
+	property(name="hostname")
+	constant(value="\", ")
+	constant(value="\"timestamp\":\"")
+	property(name="timestamp" dateFormat="rfc3339")
+	constant(value="\", ")
+	constant(value="\"@version\":\"2\", ")
+	constant(value="\"role\":\"{{ sansible_rsyslog_app_name }}\", ")
+	constant(value="\"message\":\"")
+	property(name="msg" format="json")
+	constant(value="\", ")
+	constant(value="\"priority\":\"")
+	property(name="syslogseverity")
+	constant(value="\", ")
+	constant(value="\"program\":\"")
+	property(name="programname")
+	constant(value="\", ")
+	constant(value="\"facility\":\"")
+	property(name="syslogfacility-text")
+	constant(value="\", ")
+	constant(value="\"severity\":\"")
+	property(name="syslogseverity-text")
+	constant(value="\"}\n")
+}
+
+# Template for non syslog messages, just sends the message wholesale with extra
+# furniture. Requires that the addMetadata option is set to one for imfile
+template(name="textLogTemplate"
+	type="list") {
+	constant(value="{ ")
+	constant(value="\"type\":\"")
+	property(name="programname")
+	constant(value="\", ")
+	constant(value="\"host\":\"")
+	property(name="hostname")
+	constant(value="\", ")
+	constant(value="\"timestamp\":\"")
+	property(name="timestamp" dateFormat="rfc3339")
+	constant(value="\", ")
+	constant(value="\"@version\":\"1\", ")
+	constant(value="\"role\":\"{{ sansible_rsyslog_app_name }}\", ")
+	constant(value="\"sourcefile\":\"")
+	property(name="$!metadata!filename")
+	constant(value="\", ")
+	constant(value="\"message\":\"")
+	property(name="rawmsg" format="json")
+	constant(value="\"}\n")
+}
+
+# Template for shipping JSON logs
+# Just adds some furniture to the json message
+template(name="jsonLogTemplate"
+	type="list") {
+	constant(value="{ ")
+	constant(value="\"type\":\"")
+	property(name="programname")
+	constant(value="\", ")
+	constant(value="\"host\":\"")
+	property(name="hostname")
+	constant(value="\", ")
+	constant(value="\"@version\":\"2\", ")
+	constant(value="\"role\":\"{{ sansible_rsyslog_app_name }}\", ")
+	constant(value="\"sourcefile\":\"")
+	property(name="$!metadata!filename")
+	constant(value="\", ")
+	property(name="$!all-json" position.from="2")
+}
+
+# Use standard RFC5424 log format for local logs
+$ActionFileDefaultTemplate RSYSLOG_SyslogProtocol23Format
+
+#
+# Rulesets
+#
+ruleset(name="remoteTextLog") {
+	# Don't log ELB healthchecks
+	:msg, contains, "ELB-HealthChecker" stop
+	:msg, contains, "healthcheck" stop
+	action(
+		{% for key, value in (sansible_rsyslog_defaults_omfwd | combine(sansible_rsyslog_config_omfwd)).items() %}
+		{{ key }}="{{ value }}"
+		{% endfor %}
+		type="omfwd"
+		Target="{{ sansible_rsyslog_logstash_host }}"
+		Port="{{ sansible_rsyslog_logstash_port }}"
+		Protocol="tcp"
+		template="textLogTemplate"
+	)
+	stop
+}
+
+ruleset(name="remoteJsonLog") {
+	# Don't log ELB healthchecks
+	:msg, contains, "ELB-HealthChecker" stop
+	:msg, contains, "healthcheck" stop
+	action(type="mmjsonparse" cookie="")
+	action(
+		{% for key, value in (sansible_rsyslog_defaults_omfwd | combine(sansible_rsyslog_config_omfwd)).items() %}
+		{{ key }}="{{ value }}"
+		{% endfor %}
+		type="omfwd"
+		Target="{{ sansible_rsyslog_logstash_host }}"
+		Port="{{ sansible_rsyslog_logstash_port }}"
+		Protocol="tcp"
+		template="jsonLogTemplate"
+	)
+	stop
+}
+
+# Include config files
+$IncludeConfig /etc/rsyslog.d/*.conf

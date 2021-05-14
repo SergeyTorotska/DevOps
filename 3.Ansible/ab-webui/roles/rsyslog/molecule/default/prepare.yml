@@ -1,0 +1,20 @@
+---
+
+- name: Prepare
+  hosts: all
+  gather_facts: no
+
+  tasks:
+    - name: Install Python for Ansible
+      become: yes
+      raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python3-minimal python3-zipstream)
+      changed_when: no
+
+    - name: Install apt-transport-https, lsb-release, net-tools
+      become: yes
+      apt:
+        name:
+          - apt-transport-https
+          - lsb-release
+          - net-tools
+        update_cache: yes

@@ -1,0 +1,21 @@
+#jinja2: lstrip_blocks: True
+##
+# {{ ansible_managed }}
+#
+
+# monitors unformatted application logs, they will get sent wholesale to
+# logstash with some extra bits of furniture (server role, host etc.)
+
+{% for log_settings in sansible_rsyslog_builtin_configs_json_logs_logs %}
+
+input(type="imfile"
+	File="{{ log_settings.path }}"
+	Tag="{{ log_settings.options.type_tag }}"
+	addMetadata="on"
+	ruleset="remoteJsonLog"
+	{% for key, value in (sansible_rsyslog_defaults_imfile | combine(sansible_rsyslog_config_imfile)).items() %}
+	{{ key }}="{{ value }}"
+	{% endfor %}
+)
+
+{% endfor %}
