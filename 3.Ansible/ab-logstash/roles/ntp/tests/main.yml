@@ -1,0 +1,11 @@
+---
+
+- hosts: all
+  become: yes
+  roles:
+    - weareinteractive.cron
+  vars:
+    cron_tasks:
+      - name: checking dirs
+        special_time: daily
+        job: "ls -alh > /dev/null"
