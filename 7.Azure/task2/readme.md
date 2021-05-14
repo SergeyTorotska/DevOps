@@ -1,3 +1,12 @@
+Создание группы ресурсов:
+
+az group create --name ResourceGroupITR2 --location westus
+
+Деплой ресурсов:
+
+az deployment  group create  -g ResourceGroupITR2 -f azuredeploy1.json
+
+
 azuredeploy1.json деплоит on-premise Windows file server, который бэкапит файлы в хранилище Azure. Бэкап файлы будут храниться в виде блобов. 
 также создает учетную запись хранения corpstorage01devopss, Standard LRS LRS стоит меньше всего но обеспечивает самый низкий уровень избыточности, что не подходит для задания, можно использовать Standard_ZRS просто изменив azuredeploy1.json 
 
