@@ -1,0 +1,42 @@
+---
+
+- name: Create kibana user
+  user:
+    name=kibana
+    system=yes
+    shell=/bin/false
+    home=/var/lib/kibana
+    state=present
+
+- name: Download kibana
+  get_url:
+    url=https://download.elastic.co/kibana/kibana/kibana-{{ kibana_version }}-linux-x64.tar.gz
+    dest=/tmp/kibana-{{ kibana_version }}-linux-x64.tar.gz
+    mode=0440
+
+- name: uncompress and Install kibana
+  unarchive:
+    src=/tmp/kibana-{{ kibana_version }}-linux-x64.tar.gz
+    dest={{ kibana_install_dir }}
+    creates={{ kibana_install_dir }}/kibana-{{ kibana_version }}-linux-x64
+    mode=0755
+    owner=kibana
+    group=kibana
+    copy=no
+
+- name: copy kibana init file
+  template:
+    src=kibana.init.j2
+    dest=/etc/init.d/kibana
+    mode=755
+  notify:
+  - restart kibana
+
+- name: configure kibana
+  template:
+    src=kibana.yml.j2
+    dest={{ kibana_install_dir }}/kibana-{{ kibana_version }}-linux-x64/config/kibana.yml
+  notify: restart kibana
+
+- name: enable kibana service
+  service: name=kibana enabled=yes
