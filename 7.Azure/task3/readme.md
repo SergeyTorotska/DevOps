@@ -1,3 +1,12 @@
+Создание группы ресурсов:
+
+az group create --name ResourceGroupITR3 --location westus 
+
+Деплой ресурсов:
+
+az deployment  group create  -g ResourceGroupITR3 -f templatex.json
+
+
 templatex.json деплоит Application Gateway с именем AppGw01 для балансировки нагрузки  IP-трафика на виртуальную машину Azure,
 подключенную к public_ip1
 
