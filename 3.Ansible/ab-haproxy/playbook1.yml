@@ -1,0 +1,24 @@
+---
+- name: devops
+  hosts: ab-haproxy
+  become: yes
+
+  
+  roles:
+    - apt
+    - ntp
+    - monit
+    - haproxy
+    
+  tasks:
+    - name: id
+      shell: ps -e | grep "VBox" | awk 'NR==1{print $1}'
+      register: unique_id
+
+    - name: ini file
+      ini_file: 
+        dest: /etc/conf
+        section: general 
+        option: uniqueID 
+        value: "{{unique_id.stdout}}" 
+        mode: 0600

@@ -1,0 +1,5 @@
+---
+# handlers file for haproxy
+- name: restart haproxy
+  sudo: true
+  service: name=haproxy state=restarted
