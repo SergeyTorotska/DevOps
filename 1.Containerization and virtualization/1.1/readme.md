@@ -12,6 +12,10 @@
 2. Создаем новый файл JSON для образа Ubuntu 18.04. В структуре каталогов выше мы называем наш файл ubuntu1804.json. 
 
 
-Создаем образ Ubuntu:
+3. Создаем образ Ubuntu:
 
 packer build ubuntu1804.json 
+
+4.Добавляем образ в Vagrant
+
+vagrant box add ubuntu1804-vagrant.box
