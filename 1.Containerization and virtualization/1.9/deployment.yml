@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+  namespace: test
+  labels:
+    app: test-app
+    owner: Sergey
+spec:
+  selector:
+    matchLabels:
+      project: test-project
+  template:
+    metadata:
+      labels:
+        project: test-project
+    spec:
+      containers:
+        - name: test-web
+          image: crccheck/hello-world:latest
+          ports:
+            - containerPort: 8000
